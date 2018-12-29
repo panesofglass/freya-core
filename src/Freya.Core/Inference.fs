@@ -24,10 +24,14 @@ module Inference =
 
                 static member inline Freya (_: unit) =
                     fun s ->
+#if TASKS
+                        System.Threading.Tasks.Task.FromResult ((), s)
+#else
 #if HOPAC
                         Hopac.Job.result ((), s)
 #else
                         async.Return ((), s)
+#endif
 #endif
 
             let inline defaults (a: ^a, _: ^b) =

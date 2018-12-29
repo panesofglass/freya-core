@@ -1,10 +1,11 @@
 <Project>
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <StructFreya>false</StructFreya>
     <DefineConstants Condition="'$(StructFreya)' == 'true'">$(DefineConstants);STRUCT</DefineConstants>
     <DefineConstants Condition="'$(Hopac)' == 'true'">$(DefineConstants);HOPAC</DefineConstants>
+    <DefineConstants Condition="'$(Tasks)' == 'true'">$(DefineConstants);TASKS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,13 +23,23 @@
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="4.3.4" />
     <PackageReference Include="Aether" Version="[8.2.0,9)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.*" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.*" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Hopac)' == 'true'">
     <PackageReference Include="Hopac" Version="0.3.23" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(Tasks)' == 'true'">
+    <PackageReference Include="TaskBuilder.fs" Version="2.1.*" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(StructFreya)' == 'true'">
     <PackageReference Include="System.ValueTuple" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsWindows)' != 'true' AND '$(TargetFramework)' == 'net461'">
+    <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
   </ItemGroup>
 </Project>

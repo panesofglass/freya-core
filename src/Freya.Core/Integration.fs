@@ -2,6 +2,15 @@
 
 open System
 open System.Threading.Tasks
+open Microsoft.AspNetCore.Http
+open Microsoft.Extensions.Logging
+
+#if TASKS
+
+open FSharp.Control.Tasks.V2
+// open FSharp.Control.Tasks.V2.ContextInsensitive
+
+#endif
 
 #if HOPAC
 
@@ -17,92 +26,75 @@ open Hopac.Extensions
 // through the use of adapter functions from specification signatures to
 // Freya signatures and vice versa.
 
-// Types
-
-// Common type aliases and shorthand for working with OWIN systems, giving a
-// more appropriate grammar when dealing with standards compliant software.
-
-/// An alias for the commonly used OWIN data type of an IDictionary<string,obj>.
-
-type OwinEnvironment =
-    Freya.Core.Environment
-
-/// An alias for the basic OwinAppFunc type of a Func<OwinEnvironment,Task>.
-
-type OwinAppFunc =
-    Func<OwinEnvironment, Task>
-
-/// An alias for the basic OwinMidFunc type of a Func<OwinAppFunc,OwinAppFunc>,
-/// implying the compositional nature of OWIN middleware functions.
-
-type OwinMidFunc =
-    Func<OwinAppFunc, OwinAppFunc>
-
-// OwinAppFunc
-
-/// Functions for working with OWIN types, in this case OwinAppFunc, allowing
-/// the conversion of a Freya<_> function to an OwinAppFunc.
-
-[<RequireQualifiedAccess>]
-[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
-module OwinAppFunc =
-
-    /// A function to return an OwinAppFunc from any type which may be - or
-    /// may be inferred to be (see Freya.infer) - a Freya function type.
-
-    [<CompiledName ("FromFreya")>]
-    let inline ofFreya freya : OwinAppFunc =
-
-        let freya =
-            Freya.infer freya
-
-        let init =
-            State.create >> freya
-
-        OwinAppFunc (fun e ->
-#if HOPAC
-            Hopac.startAsTask (init e) :> Task)
+#if TASKS
+type HttpFuncResult = Task<HttpContext option>
 #else
-            Async.StartAsTask (init e) :> Task)
+#if HOPAC
+type HttpFuncResult = Job<HttpContext option>
+#else
+type HttpFuncResult = Async<HttpContext option>
+#endif
 #endif
 
-// OwinMidFunc
+type HttpFunc = HttpContext -> HttpFuncResult
 
-/// Functions for working with OWIN types, in this case OwinMidFunc, allowing
-/// the conversion of a Freya<_> function to an OwinMidFunc.
+type HttpHandler = HttpFunc -> HttpFunc
 
-[<RequireQualifiedAccess>]
-[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
-module OwinMidFunc =
+type FreyaMiddleware (next:RequestDelegate, handler:HttpHandler, loggerFactory:ILoggerFactory) =
+    do if isNull next then raise (ArgumentNullException("next"))
 
-    /// A function to return an OwinMidFunc from any type which may be - or
-    /// may be inferred to be (see Freya.infer) - a Freya function type.
-
-    [<CompiledName ("FromFreya")>]
-    let inline ofFreya freya : OwinMidFunc =
-
-        let freya =
-            Freya.infer freya
-
-        let init =
-            State.create >> freya
-
-        OwinMidFunc (fun n ->
-            OwinAppFunc (fun e ->
-#if HOPAC
-                Hopac.startAsTask (
-                    init e |> Job.bind (fun (FreyaResult (p,s)) ->
-                        match p with
-                        | Halt ->
-                            Job.unit ()
-                        | Next ->
-                            s.Environment |> Job.liftUnitTask (fun e -> n.Invoke e))) :> Task))
+    // pre-compile the handler pipeline
+    let func : HttpFunc =
+#if TASKS
+        handler (fun ctx -> Some ctx |> Task.FromResult)
 #else
-                Async.StartAsTask (
-                    async.Bind (init e, fun (FreyaResult (p,s)) ->
-                        match p with
-                        | Halt ->
-                            async.Zero ()
-                        | Next ->
-                            Async.AwaitTask (n.Invoke (s.Environment)))) :> Task))
+#if HOPAC
+        handler (fun ctx -> Some ctx |> Job.result)
+#else
+        handler (fun ctx -> Some ctx |> async.Return)
+#endif
+#endif
+
+    member __.Invoke (ctx : HttpContext) =
+#if TASKS
+        task {
+#else
+#if HOPAC
+        job {
+#else
+        async {
+#endif
+#endif
+            let start = System.Diagnostics.Stopwatch.GetTimestamp();
+
+            let! result = func ctx
+            let  logger = loggerFactory.CreateLogger<FreyaMiddleware>()
+
+            if logger.IsEnabled LogLevel.Debug then
+                let freq = double System.Diagnostics.Stopwatch.Frequency
+                let stop = System.Diagnostics.Stopwatch.GetTimestamp()
+                let elapsedMs = (double (stop - start)) * 1000.0 / freq
+
+                logger.LogDebug(
+                    "Freya returned {SomeNoneResult} for {HttpProtocol} {HttpMethod} at {Path} in {ElapsedMs}",
+                    (if result.IsSome then "Some" else "None"),
+                    ctx.Request.Protocol,
+                    ctx.Request.Method,
+                    ctx.Request.Path.ToString(),
+                    elapsedMs)
+
+            if (result.IsNone) then
+#if TASKS
+                return! next.Invoke ctx
+        }
+#else
+#if HOPAC
+                return! Job.awaitUnitTask (next.Invoke ctx)
+        }
+        |> Hopac.startAsTask :> Task
+#else
+                return! Async.AwaitTask (next.Invoke ctx)
+        }
+        |> Async.StartAsTask :> Task
+#endif
 #endif

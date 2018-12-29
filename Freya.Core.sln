@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
@@ -16,6 +16,8 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Freya.Core.Hopac.Tests", "tests\Freya.Core.Hopac.Tests\Freya.Core.Hopac.Tests.fsproj", "{E30463D3-AEFE-434E-B04D-13F7E279EB03}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Freya.Core.Benchmarks", "tests\Freya.Core.Benchmarks\Freya.Core.Benchmarks.fsproj", "{919182F7-0B93-45FB-8740-42B24F9D3BF5}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Freya.Core.Task", "src\Freya.Core.Task\Freya.Core.Task.fsproj", "{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,6 +92,18 @@ Global
 		{919182F7-0B93-45FB-8740-42B24F9D3BF5}.Release|x64.Build.0 = Release|x64
 		{919182F7-0B93-45FB-8740-42B24F9D3BF5}.Release|x86.ActiveCfg = Release|x86
 		{919182F7-0B93-45FB-8740-42B24F9D3BF5}.Release|x86.Build.0 = Release|x86
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Debug|x64.Build.0 = Debug|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Debug|x86.Build.0 = Debug|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Release|x64.ActiveCfg = Release|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Release|x64.Build.0 = Release|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Release|x86.ActiveCfg = Release|Any CPU
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DB64EA90-0E1D-412D-8DC4-5E1DE85E7D04} = {F8D7A994-F73B-4ED7-BE2D-63C4589E6574}
@@ -97,5 +111,6 @@ Global
 		{BD88F624-587B-44D7-BAFA-145D2CB12206} = {322721E0-5CF1-43A9-8777-979A9B30DBB8}
 		{E30463D3-AEFE-434E-B04D-13F7E279EB03} = {322721E0-5CF1-43A9-8777-979A9B30DBB8}
 		{919182F7-0B93-45FB-8740-42B24F9D3BF5} = {322721E0-5CF1-43A9-8777-979A9B30DBB8}
+		{FB93BC60-2B49-48F2-A0DC-C414FCEFD823} = {F8D7A994-F73B-4ED7-BE2D-63C4589E6574}
 	EndGlobalSection
 EndGlobal

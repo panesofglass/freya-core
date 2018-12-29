@@ -1,6 +1,7 @@
 ﻿module Freya.Core.Tests
 
 open System.Collections.Generic
+open Microsoft.AspNetCore.Http
 open Freya.Core
 open Swensen.Unquote
 open Xunit
@@ -15,7 +16,7 @@ open Hopac
 // including a standard known state.
 
 let private environment () =
-    let e = Dictionary<string, obj> () :> IDictionary<string, obj>
+    let e : HttpContext = DefaultHttpContext() :> _
     e.["o1"] <- false
     e.["o2"] <- false
     e
@@ -69,7 +70,7 @@ let ``Freya.combine behaves correctly`` () =
 // enabling optic based operations on the underlying state.
 
 let private key_ =
-    State.value_ "key"
+    Dict.value_ "key"
 
 [<Fact>]
 let ``Freya.Optic.get|set|map behave correctly`` () =
